@@ -1,0 +1,143 @@
+/* Reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Arial", sans-serif;
+  background-color: #f4f6f8;
+  color: #1a1a1a;
+}
+
+/* Barra superior com dados do atendente */
+.top-bar {
+  background-color: #0d3b66;
+  color: #ffffff;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: flex-end;
+  font-size: 0.95rem;
+}
+
+.atendente-info {
+  text-align: right;
+}
+
+/* Container geral */
+.container {
+  background-color: #ffffff;
+  margin: 2rem auto;
+  padding: 2rem 2.5rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  max-width: 700px;
+  width: 90%;
+}
+
+/* Título */
+h1 {
+  text-align: center;
+  color: #0d3b66;
+  margin-bottom: 2rem;
+}
+
+/* Painel de senhas */
+.painel-senhas {
+  display: flex;
+  justify-content: space-between;
+  background-color: #eef2f7;
+  padding: 1rem 2rem;
+  border-radius: 10px;
+  margin-bottom: 2rem;
+}
+
+.painel-senhas div {
+  flex: 1;
+  text-align: center;
+}
+
+.caixa {
+    background-color: #228be6;;
+    border:  1px;
+    padding: .5rem;
+    color: white;
+    border-radius: 1rem;
+}
+
+.painel-numero {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #228be6;
+}
+.grenn {color: #ffffff;
+  font-size: 2.5rem;
+  font-weight: bold;}
+
+/* Campos de formulário */
+label {
+  display: block;
+  margin-top: 1.5rem;
+  font-weight: bold;
+  color: #333;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 0.8rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+  background-color: #fff;
+}
+
+/* Botões */
+.buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2rem;
+  gap: 1rem;
+}
+
+button {
+  flex: 1;
+  padding: 1rem;
+  font-size: 1.1rem;
+  background-color: #228be6;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+}
+
+button:hover {
+  background-color: #1c7ed6;
+  transform: scale(1.02);
+}
+
+button:focus {
+  outline: 3px solid #74c0fc;
+}
+
+/* Painel com dados do atendimento atual */
+.info-box {
+  background-color: #eef2f7;
+  border-left: 5px solid #228be6;
+  padding: 1.5rem;
+  border-radius: 10px;
+  margin-top: 2.5rem;
+  display: none; /* Padrão: oculto, mostrado via JS */
+}
+
+.info-box p {
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.info-box strong {
+  color: #0d3b66;
+}

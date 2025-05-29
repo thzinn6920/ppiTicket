@@ -1,4 +1,6 @@
 <?php
+$senhaAtual = file_exists("senha_atual.txt") ? trim(file_get_contents("senha_atual.txt")) : "00";
+$guiche = file_exists("guiche.txt") ? trim(file_get_contents("guiche.txt")) : "--";
 $proximaSenha = file_exists("proxima_senha.txt") ? trim(file_get_contents("proxima_senha.txt")) : "00";
 ?>
 
@@ -56,7 +58,7 @@ $proximaSenha = file_exists("proxima_senha.txt") ? trim(file_get_contents("proxi
 <body>
 
 <div class="container">
-    <h1>Senha 019 sendo atendida no guichê 03</h1>
+    <h1>Senha <?= htmlspecialchars($senhaAtual) ?> sendo atendida no guichê <?= htmlspecialchars($guiche) ?></h1>
     <div class="linha"></div>
 
     <div class="proxima">

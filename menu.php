@@ -13,7 +13,7 @@
     <h2>O que deseja fazer?</h2>
 
     <form class="form" onsubmit="return false;">
-      <a href="login.php" class="btn"><i class="fas fa-sign-in-alt"></i> Login</a>
+      <a href="auth.php" class="btn"><i class="fas fa-sign-in-alt"></i> Login</a>
       <a href="telaUsuario.php" class="btn"><i class="fas fa-ticket-alt"></i> Retirar senhas</a>
       <a href="ver.php" class="btn"><i class="fas fa-list-ul"></i> Ver senhas retiradas</a>
     </form>

@@ -1,8 +1,21 @@
 <?php
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $novaSenha = $_POST["senha"];
-    file_put_contents("proxima_senha.txt", $novaSenha);
-    $mensagem = "Senha atualizada para: " . htmlspecialchars($novaSenha);
+    $senhaAtual = filter_input(INPUT_POST, "senha_atual", FILTER_VALIDATE_INT);
+    $guiche = htmlspecialchars($_POST["guiche"]);
+
+    if ($senhaAtual !== false && $senhaAtual !== null && is_numeric($guiche)) {
+        // Salva a senha atual e guichê
+        file_put_contents("senha_atual.txt", $senhaAtual);
+        file_put_contents("guiche.txt", $guiche);
+
+        // Incrementa e salva a próxima senha
+        $proximaSenha = $senhaAtual + 1;
+        file_put_contents("proxima_senha.txt", $proximaSenha);
+
+        $mensagem = "Senha e guichê atualizados com sucesso!";
+    } else {
+        $mensagem = "Por favor, insira apenas números válidos.";
+    }
 }
 ?>
 
@@ -30,7 +43,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         input, button {
             padding: 10px 20px;
             font-size: 18px;
-            margin-top: 10px;
+            margin: 10px 5px;
             border-radius: 5px;
             border: 1px solid #ccc;
         }
@@ -49,9 +62,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 </head>
 <body>
 <div class="container">
-    <h2>Atualizar Próxima Senha</h2>
+    <h2>Atualizar Senha e Guichê</h2>
     <form method="post">
-        <input type="text" name="senha" placeholder="Digite a nova senha" required>
+        <input type="number" name="senha_atual" placeholder="Senha atual" required>
+        <input type="number" name="guiche" placeholder="Guichê" required>
         <br>
         <button type="submit">Atualizar</button>
     </form>
