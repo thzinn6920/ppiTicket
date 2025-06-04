@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once 'config.php'; // Arquivo com a conexão ao banco de dados
+require_once 'config.php'; // Arquivo de conexão com $conn
 
 // Verifica se os campos foram enviados
 if (!isset($_POST['email'], $_POST['senha'])) {
@@ -11,28 +11,24 @@ if (!isset($_POST['email'], $_POST['senha'])) {
 $email = $_POST['email'];
 $senha = $_POST['senha'];
 
-// Consulta o usuário no banco com email e ativo = 1
-$stmt = $conn->prepare("SELECT id, nome, senha, tipo FROM usuarios WHERE email = ? AND ativo = 1");
+// Consulta o atendente no banco
+$stmt = $conn->prepare("SELECT id_atendente, nome, senha, nivel FROM atendentes WHERE email = ?");
 $stmt->bind_param("s", $email);
 $stmt->execute();
 $result = $stmt->get_result();
 
-// Se o usuário for encontrado
 if ($user = $result->fetch_assoc()) {
-    // Verifica se a senha digitada confere com o hash
     if (password_verify($senha, $user['senha'])) {
-        // Autenticado com sucesso: cria a sessão
-        $_SESSION['usuario_id'] = $user['id'];
+        // Autenticado com sucesso
+        $_SESSION['usuario_id'] = $user['id_atendente'];
         $_SESSION['usuario_nome'] = $user['nome'];
-        $_SESSION['usuario_tipo'] = $user['tipo'];
+        $_SESSION['usuario_tipo'] = $user['nivel'];
 
-        // Redireciona com base no tipo de usuário
-        if ($user['tipo'] === 'admin') {
-            header("Location: painel_admin.php");
-        } elseif ($user['tipo'] === 'atendente') {
-            header("Location: painel_atendente.php");
+        // Redireciona conforme o nível
+        if ($user['nivel'] === 'admin') {
+            header("Location: telaAtendente.php");
         } else {
-            header("Location: login.php?erro=3"); // Tipo inválido
+            header("Location: telaAtendente.php");
         }
         exit;
     } else {
@@ -41,7 +37,7 @@ if ($user = $result->fetch_assoc()) {
         exit;
     }
 } else {
-    // Usuário não encontrado ou inativo
+    // Usuário não encontrado
     header("Location: login.php?erro=1");
     exit;
 }
