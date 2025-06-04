@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Retire sua Senha</title>
+  <link rel="stylesheet" href="telaUsuario.css" />
+  <style>
+    .popup {
+      display: none;
+      justify-content: center;
+      align-items: center;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 999;
+    }
+
+    .popup-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .senha-grande {
+      font-size: 3rem;
+      font-weight: bold;
+    }
+
+    iframe {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <h1>Bem-vindo!</h1>
+    <h2>Retire sua Senha</h2>
+
+    <form class="form" method="POST" action="emitir_senha.php" target="hiddenFrame">
+      <div class="radio-group">
+        <input type="radio" id="comum" name="tipo" value="Comum" class="radio-input" checked>
+        <label for="comum" class="radio-label">👤 Atendimento Comum</label>
+
+        <input type="radio" id="prioritario" name="tipo" value="Prioritário" class="radio-input">
+        <label for="prioritario" class="radio-label">♿ 🤱 Prioritário</label>
+      </div>
+
+      <button type="submit" class="btn emitir">Emitir Senha</button>
+    </form>
+  </main>
+
+  <!-- Modal (popup) -->
+  <div class="popup" id="popup">
+    <div class="popup-content">
+      <h2>Senha Emitida</h2>
+      <p class="tipo">Tipo: <strong id="tipoSenha">Atendimento</strong></p>
+      <p class="senha-grande" id="codigoSenha"></p>
+      <p class="temporizador">Esta janela fechará em <span id="tempo">5</span> segundos...</p>
+    </div>
+  </div>
+
+  <!-- Iframe invisível para processar emissão -->
+  <iframe name="hiddenFrame"></iframe>
+
+  <script>
+    function exibirSenha(tipo, senha) {
+      document.getElementById("tipoSenha").innerText = tipo;
+      document.getElementById("codigoSenha").innerText = senha;
+
+      const popup = document.getElementById("popup");
+      popup.style.display = "flex";
+
+      let tempo = 5;
+      const tempoEl = document.getElementById("tempo");
+      tempoEl.innerText = tempo;
+
+      const intervalo = setInterval(() => {
+        tempo--;
+        tempoEl.innerText = tempo;
+        if (tempo === 0) {
+          clearInterval(intervalo);
+          popup.style.display = "none";
+        }
+      }, 1000);
+    }
+  </script>
+</body>
+</html>
