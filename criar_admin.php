@@ -60,7 +60,7 @@
 <?php
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Conexão com o banco
-    $conn = new mysqli('localhost', 'root', '', 'ppi');
+    $conn = new mysqli('localhost', 'root', '', 'fila');
 
     if ($conn->connect_error) {
         $_SESSION['admin_msg'] = "Erro de conexão: " . $conn->connect_error;

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Painel do Atendente</title>
-  <link rel="stylesheet" href="css/atendente.css" />
+  <link rel="stylesheet" href="telaAtendente.css" />
 </head>
 <body>
   <div class="header"></div>
@@ -15,7 +15,6 @@
 
       <div class="card-top">
         <div class="left-side">
-          <button class="btn-offline">OFFLINE</button>
           <button class="btn-call">Chamar próxima senha</button>
         </div>
         <div class="right-side">
@@ -24,7 +23,7 @@
             <span>Guichê: 03</span><br />
             <span>Senhas atendidas: 0</span>
           </div>
-          <div class="user-icon">👤</div>
+         
         </div>
       </div>
 

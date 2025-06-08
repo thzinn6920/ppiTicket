@@ -1,6 +1,6 @@
 <?php
 $host = 'localhost';
-$db = 'ppi';         // Nome atualizado do banco
+$db = 'fila';         // Nome atualizado do banco
 $user = 'root';      // Padrão do XAMPP
 $pass = '';          // Senha padrão (vazia)
 $charset = 'utf8mb4';

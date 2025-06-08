@@ -26,7 +26,7 @@ if ($user = $result->fetch_assoc()) {
 
         // Redireciona conforme o nível
         if ($user['nivel'] === 'admin') {
-            header("Location: telaAtendente.php");
+            header("Location: adminPainel.php");
         } else {
             header("Location: telaAtendente.php");
         }
