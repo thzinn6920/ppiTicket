@@ -22,9 +22,6 @@
                 </div>
                 <button type="submit" class="btn btn-primary w-100">Entrar</button>
             </form>
-            <div class="text-center mt-3">
-                <a href="criar_admin.php">Não é registrado ainda? faça seu cadastro aqui</a>
-            </div>
         </div>
     </div>
 </body>

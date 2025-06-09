@@ -28,6 +28,7 @@ if ($user = $result->fetch_assoc()) {
         if ($user['nivel'] === 'admin') {
             header("Location: adminPainel.php");
         } else {
+            $_SESSION['atendente_logado'] = true; // <<< FLAG DE ATENDENTE LOGADO
             header("Location: telaAtendente.php");
         }
         exit;

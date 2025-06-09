@@ -1,3 +1,11 @@
+<?php
+session_start();
+if (!isset($_SESSION['atendente_logado']) || $_SESSION['atendente_logado'] !== true) {
+    header("Location: login.php");
+    exit();
+}
+?>
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -7,7 +15,10 @@
   <link rel="stylesheet" href="telaAtendente.css" />
 </head>
 <body>
-  <div class="header"></div>
+  <div class="header">
+    <a href="logout.php" style="position:absolute; top:10px; right:10px; padding:8px 12px; background-color:#f44336; color:white; text-decoration:none; border-radius:5px;">Logout</a>
+
+  </div>
 
   <div class="main-container">
     <div class="box">
@@ -33,10 +44,7 @@
       </div>
 
       <form class="form-section" id="formAtendimento" method="POST">
-        <label>Identificação do Cliente</label>
-        <input type="text" name="nome_cliente" placeholder="Nome e segundo nome do cliente" required />
-        <input type="text" name="cpf_cliente" placeholder="Digite o CPF" required />
-
+       
         <label>Assunto do Atendimento</label>
         <select name="tipo_de_servico" required>
           <option value="">Selecione</option>
@@ -46,9 +54,7 @@
           <option value="Reclamação">Reclamação</option>
         </select>
 
-        <label>Observações</label>
-        <textarea name="observacoes" placeholder="Digite observações (opcional)"></textarea>
-
+        
         <input type="hidden" name="id_atendente" value="2" />
 
         <div class="form-buttons">
