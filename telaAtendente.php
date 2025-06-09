@@ -67,25 +67,41 @@ if (!isset($_SESSION['atendente_logado']) || $_SESSION['atendente_logado'] !== t
   </div>
 
   <script>
-    document.getElementById('formAtendimento').addEventListener('submit', function(e) {
-      e.preventDefault(); // previne o envio normal
+    <script>
+window.addEventListener('load', function() {
+  let guiche = prompt("Digite o número do seu guichê:");
 
-      const form = e.target;
-      const formData = new FormData(form);
+  if (guiche === null || guiche.trim() === "") {
+    alert("Você deve informar um número de guichê!");
+    window.location.href = "pagina_erro.html"; // ou fechar a aba
+    return;
+  }
 
-      fetch('finalizar_atendimento.php', {
-        method: 'POST',
-        body: formData
-      })
-      .then(response => response.text())
-      .then(text => {
-        alert(text);   // mostra a mensagem retornada pelo PHP
-        form.reset();  // limpa o formulário
-      })
-      .catch(error => {
-        alert('Erro ao enviar dados: ' + error);
-      });
-    });
+  fetch('verificar_guiche.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'guiche=' + encodeURIComponent(guiche)
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.status === 'ok') {
+      document.querySelector('.user-info').innerHTML = `
+        <span>Atendente: João Exemplo</span><br />
+        <span>Guichê: ${guiche}</span><br />
+        <span>Senhas atendidas: 0</span>
+      `;
+    } else {
+      alert(data.message);
+      window.location.href = "pagina_erro.html"; // ou fechar a aba
+    }
+  })
+  .catch(error => {
+    alert('Erro ao verificar guichê: ' + error);
+    window.location.href = "pagina_erro.html";
+  });
+});
+</script>
+
   </script>
 </body>
 </html>
