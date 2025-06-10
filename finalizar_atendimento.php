@@ -1,63 +1,60 @@
 <?php
-include 'config.php';  // sua conexão com o banco
+session_start();
+require_once 'config.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nome_cliente = $conn->real_escape_string($_POST['nome_cliente']);
-    $cpf_cliente = $conn->real_escape_string($_POST['cpf_cliente']);
-    $descricao_assunto = $conn->real_escape_string($_POST['tipo_de_servico']);
-    $observacoes = $conn->real_escape_string($_POST['observacoes']);
-    $id_atendente = intval($_POST['id_atendente']);
-
-    // Buscar o id_assunto correspondente ao texto recebido no select
-    $sqlBuscaAssunto = "SELECT id_assunto FROM assuntos_atendimento WHERE descricao = ?";
-    $stmt = $conn->prepare($sqlBuscaAssunto);
-    $stmt->bind_param("s", $descricao_assunto);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows === 0) {
-        echo "Assunto não encontrado: " . htmlspecialchars($descricao_assunto);
-        exit;
-    }
-
-    $row = $result->fetch_assoc();
-    $id_assunto = $row['id_assunto'];
-
-    // Inserir na tabela senhas (emissão da senha)
-    $data_emissao = date('Y-m-d');
-    $hora_emissao = date('H:i:s');
-    $status = 'atendido';
-
-    $sqlInsertSenha = "INSERT INTO senhas (data_emissao, hora_emissao, id_assunto, nome, cpf, status) VALUES (?, ?, ?, ?, ?, ?)";
-    $stmtSenha = $conn->prepare($sqlInsertSenha);
-    $stmtSenha->bind_param("ssisss", $data_emissao, $hora_emissao, $id_assunto, $nome_cliente, $cpf_cliente, $status);
-
-    if ($stmtSenha->execute()) {
-        $id_senha = $stmtSenha->insert_id;
-
-        // Agora insere na tabela atendimentos
-        $data_atendimento = $data_emissao;
-        $hora_chamada = $hora_emissao;
-        $tempo_espera = 0;
-        $tempo_atendimento = 0;
-
-        $sqlInsertAtendimento = "INSERT INTO atendimentos (id_senha, id_atendente, data_atendimento, hora_chamada, tempo_espera, tempo_atendimento, observacoes) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        $stmtAtendimento = $conn->prepare($sqlInsertAtendimento);
-        $stmtAtendimento->bind_param("iissiis", $id_senha, $id_atendente, $data_atendimento, $hora_chamada, $tempo_espera, $tempo_atendimento, $observacoes);
-
-        if ($stmtAtendimento->execute()) {
-            echo "Atendimento finalizado e salvo com sucesso!";
-        } else {
-            echo "Erro ao salvar atendimento: " . $conn->error;
-        }
-        $stmtAtendimento->close();
-    } else {
-        echo "Erro ao salvar senha: " . $conn->error;
-    }
-    $stmtSenha->close();
-    $stmt->close();
-    $conn->close();
-} else {
-    echo "Método inválido.";
+if (!isset($_POST['senha_nome'], $_POST['id_atendente'])) {
+    die("Dados incompletos.");
 }
+
+$senha_nome = $_POST['senha_nome'];
+$id_atendente = $_POST['id_atendente'];
+
+// Busca a senha no banco
+$stmt = $conn->prepare("SELECT id_senha, data_emissao, hora_emissao FROM senhas WHERE nome = ?");
+$stmt->bind_param("s", $senha_nome);
+$stmt->execute();
+$result = $stmt->get_result();
+$senha = $result->fetch_assoc();
+
+if (!$senha) {
+    die("Senha não encontrada.");
+}
+
+// Marca como atendido
+$update = $conn->prepare("UPDATE senhas SET status = 'atendido' WHERE id_senha = ?");
+$update->bind_param("i", $senha['id_senha']);
+$update->execute();
+
+// Calcula os tempos
+date_default_timezone_set('America/Sao_Paulo');
+$agora = new DateTime();
+$emissao = new DateTime($senha['data_emissao'] . ' ' . $senha['hora_emissao']);
+
+$tempo_espera = $emissao->diff($agora)->i;     // em minutos
+$tempo_atendimento = rand(3, 10);              // simulação
+
+$data_atendimento = $agora->format('Y-m-d');
+$hora_chamada = $agora->format('H:i:s');
+
+// Insere o atendimento
+$insert = $conn->prepare("INSERT INTO atendimentos (
+    id_senha, id_atendente, data_atendimento, hora_chamada,
+    tempo_espera, tempo_atendimento, observacoes
+) VALUES (?, ?, ?, ?, ?, ?, '')");
+$insert->bind_param(
+    "iissii",
+    $senha['id_senha'],
+    $id_atendente,
+    $data_atendimento,
+    $hora_chamada,
+    $tempo_espera,
+    $tempo_atendimento
+);
+$insert->execute();
+
+// Limpa a sessão da senha atual
+unset($_SESSION['senha_chamada']);
+
+header("Location: telaAtendente.php");
+exit;
 ?>

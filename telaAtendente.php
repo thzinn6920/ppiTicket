@@ -76,7 +76,9 @@ $stmt->close();
 
       <div class="card-top">
         <div class="left-side">
-          <button class="btn-call">Chamar próxima senha</button>
+          <form method="POST" action="chamar_senha.php">
+            <button type= "submit" class="btn-call">Chamar próxima senha</button>
+          </form>
         </div>
         <div class="right-side">
           <div class="user-info">
@@ -86,10 +88,9 @@ $stmt->close();
           </div>
         </div>
       </div>
-
       <div class="em-atendimento">
         <span>Em atendimento:</span><br />
-        <strong>– – – –</strong>
+        <strong><?php echo isset($_SESSION['senha_chamada']) ? $_SESSION['senha_chamada'] : '– – – –'; ?></strong>
       </div>
 
       <form class="form-section" id="formAtendimento" method="POST">
