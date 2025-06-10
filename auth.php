@@ -24,21 +24,22 @@ if ($user = $result->fetch_assoc()) {
         $_SESSION['usuario_nome'] = $user['nome'];
         $_SESSION['usuario_tipo'] = $user['nivel'];
 
+        // Salva id_atendente para uso posterior (como no logout)
+        $_SESSION['id_atendente'] = $user['id_atendente'];
+
         // Redireciona conforme o nível
         if ($user['nivel'] === 'admin') {
             header("Location: adminPainel.php");
         } else {
-            $_SESSION['atendente_logado'] = true; // <<< FLAG DE ATENDENTE LOGADO
+            $_SESSION['atendente_logado'] = true;
             header("Location: telaAtendente.php");
         }
         exit;
     } else {
-        // Senha incorreta
         header("Location: login.php?erro=2");
         exit;
     }
 } else {
-    // Usuário não encontrado
     header("Location: login.php?erro=1");
     exit;
 }
