@@ -16,10 +16,11 @@
   <div class="sidebar">
     <h4>Administrador</h4>
     <nav class="nav flex-column">
-      <a href="#" class="nav-link active" onclick="mostrarSecao('dashboard')">📊 Dashboard</a>
-      <a href="#" class="nav-link" onclick="mostrarSecao('metricas')">📈 Métricas</a>
-      <a href="#" class="nav-link" onclick="mostrarSecao('criar')">👤 Criar Atendente</a>
-      <a href="#" class="nav-link" onclick="mostrarSecao('online')">🟢 Atendentes Online</a>
+      <a href="#dashboard" class="nav-link active" onclick="mostrarSecao('dashboard', this)">📊 Dashboard</a>
+      <a href="#metricas" class="nav-link" onclick="mostrarSecao('metricas', this)">📈 Métricas</a>
+      <a href="#criar" class="nav-link" onclick="mostrarSecao('criar', this)">👤 Criar Atendente</a>
+      <a href="#criarGuiche" class="nav-link" onclick="mostrarSecao('criarGuiche', this)">🏢 Criar Guichê</a>
+      <a href="#online" class="nav-link" onclick="mostrarSecao('online', this)">🟢 Atendentes Online</a>
     </nav>
   </div>
 
@@ -71,7 +72,38 @@
             <label>Senha:</label>
             <input type="password" name="senha" class="form-control" required>
           </div>
-          <button type="submit" class="btn btn-primary w-100">Criar Usuário</button>
+          <button type="submit" name="criar_atendente" class="btn btn-primary w-100">Criar Usuário</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="criarGuiche" class="section">
+      <h2>🏢 Criar Guichê</h2>
+      <div class="form-container">
+        <?php if (isset($_SESSION['guiche_msg'])): ?>
+          <div class="alert alert-warning d-flex align-items-center" role="alert">
+  <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Atenção:">
+    <use xlink:href="#exclamation-triangle-fill"/>
+  </svg>
+  <div>
+    <?= $_SESSION['guiche_msg']; unset($_SESSION['guiche_msg']); ?>
+  </div>
+</div>
+
+<!-- Adicione no <head> ou logo antes do fechamento </body>: -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="exclamation-triangle-fill" fill="currentColor" viewBox="0 0 16 16">
+    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.964 0L.165 13.233c-.457.778.091 1.767.982 1.767h13.707c.89 0 1.438-.99.982-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1-2.002 0 1 1 0 0 1 2.002 0z"/>
+  </symbol>
+</svg>
+
+        <?php endif; ?>
+        <form method="post" action="">
+          <div class="mb-3">
+            <label>Nome do Guichê:</label>
+            <input type="text" name="nome_guiche" class="form-control" maxlength="20" required placeholder="Ex: Guichê 01">
+          </div>
+          <button type="submit" name="criar_guiche" class="btn btn-primary w-100">Criar Guichê</button>
         </form>
       </div>
     </div>
@@ -108,13 +140,14 @@
   </div>
 
   <script>
-    function mostrarSecao(id) {
+    function mostrarSecao(id, link = null) {
       document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
       document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
       document.getElementById(id).classList.add('active');
-      event.target.classList.add('active');
+      if (link) link.classList.add('active');
 
       if (id === 'dashboard') carregarDashboard();
+      window.location.hash = id;
     }
 
     function carregarDashboard() {
@@ -152,17 +185,21 @@
         });
     }
 
-    window.onload = carregarDashboard;
+    window.onload = () => {
+      const hash = window.location.hash.replace('#', '') || 'dashboard';
+      const link = [...document.querySelectorAll('.nav-link')].find(l => l.getAttribute('onclick')?.includes(hash));
+      mostrarSecao(hash, link);
+    };
   </script>
 </body>
 </html>
 
 <?php
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['nome'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['criar_atendente'])) {
   $conn = new mysqli('localhost', 'root', '', 'fila');
   if ($conn->connect_error) {
     $_SESSION['admin_msg'] = "Erro de conexão: " . $conn->connect_error;
-    header("Location: admin_painel.php");
+    header("Location: admin_painel.php#criar");
     exit;
   }
 
@@ -170,7 +207,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['nome'])) {
   $matricula = $_POST['matricula'];
   $email = $_POST['email'];
   $senha = password_hash($_POST['senha'], PASSWORD_DEFAULT);
-  $nivel = 'atendente'; 
+  $nivel = 'atendente';
 
   $stmt = $conn->prepare("SELECT 1 FROM atendentes WHERE email = ?");
   $stmt->bind_param("s", $email);
@@ -199,6 +236,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['nome'])) {
   $conn->close();
 
   header("Location: admin_painel.php#criar");
+  exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['criar_guiche'])) {
+  $conn = new mysqli('localhost', 'root', '', 'fila');
+  if ($conn->connect_error) {
+    $_SESSION['guiche_msg'] = "Erro de conexão: " . $conn->connect_error;
+    header("Location: admin_painel.php#criarGuiche");
+    exit;
+  }
+
+  $nome_guiche = trim($_POST['nome_guiche']);
+
+  $stmt = $conn->prepare("SELECT 1 FROM guiches WHERE nome = ?");
+  $stmt->bind_param("s", $nome_guiche);
+  $stmt->execute();
+  $stmt->store_result();
+
+  if ($stmt->num_rows > 0) {
+    $_SESSION['guiche_msg'] = "⚠️ Já existe um guichê com esse nome.";
+    $stmt->close();
+    $conn->close();
+    header("Location: admin_painel.php#criarGuiche");
+    exit;
+  }
+  $stmt->close();
+
+  $stmt = $conn->prepare("INSERT INTO guiches (nome) VALUES (?)");
+  $stmt->bind_param("s", $nome_guiche);
+  if ($stmt->execute()) {
+    $_SESSION['guiche_msg'] = "✅ Guichê criado com sucesso!";
+  } else {
+    $_SESSION['guiche_msg'] = "Erro ao criar guichê: " . $stmt->error;
+  }
+  $stmt->close();
+  $conn->close();
+
+  header("Location: admin_painel.php#criarGuiche");
   exit;
 }
 ?>
