@@ -47,6 +47,7 @@ while ($row = $res->fetch_assoc()) {
 
       <div class="card-top">
         <div class="left-side">
+          <button onclick="chamarSenha()" class="btn-call">Chamar próxima senha</button>
           <form action="chamar_senha.php" method="POST">
             <button type="submit" class="btn-call">Chamar próxima senha</button>
           </form>
@@ -65,6 +66,28 @@ while ($row = $res->fetch_assoc()) {
         <strong><?php echo $_SESSION['senha_chamada'] ?? '– – – –'; ?></strong>
       </div>
 
+      <form class="form-section" id="formAtendimento" method="POST" action="finalizar_atendimento.php">
+        <label>Assunto do Atendimento</label>
+        <select name="tipo_de_servico" required>
+          <option value="">Selecione o tipo de serviço</option>
+          <option value="certidao_nascimento">Certidão de nascimento</option>
+          <option value="certidao_casamento">Certidão de casamento</option>
+          <option value="certidao_obito">Certidão de óbito</option>
+          <option value="registro_imovel">Registro de imóvel</option>
+          <option value="reconhecimento_firma">Reconhecimento de firma</option>
+          <option value="procuracao">Procuração</option>
+          <option value="protesto_titulo">Protesto de título</option>
+          <option value="registro_td">Registro de títulos e documentos</option>
+          <option value="apostilamento">Apostilamento / tradução</option>
+          <option value="outros">Outros serviços</option>
+        </select>
+
+        <input type="hidden" name="id_atendente" value="<?= $id_atendente ?>" />
+        <input type="hidden" name="senha_nome" value="<?= isset($_SESSION['senha_chamada']) ? $_SESSION['senha_chamada'] : '' ?>">
+
+        <div class="form-buttons">
+          <button type="submit" name="finalizar" class="btn-finalizar">Finalizar Atendimento</button>
+          <button type="submit" name="ausente" class="btn-ausente">Cliente ausente</button>
       <form class="form-section" action="finalizar_atendimento.php" method="POST">
         <label>Assunto do Atendimento</label>
         <select name="tipo_de_servico" required>
@@ -86,5 +109,66 @@ while ($row = $res->fetch_assoc()) {
       </form>
     </div>
   </div>
+
+  <?php if (!$guiche_nome): ?>
+    <div class="modal" id="modalGuiche">
+      <div class="modal-content">
+        <h3>Selecione seu guichê</h3>
+        <select id="selectGuiche">
+          <option value="">-- Selecione --</option>
+          <?php
+            $sql = "SELECT id_guiche, nome FROM guiches WHERE id_guiche NOT IN (SELECT id_guiche FROM ocupacao_guiches)";
+            $result = $conn->query($sql);
+            while ($row = $result->fetch_assoc()) {
+              echo "<option value='{$row['id_guiche']}'>{$row['nome']}</option>";
+            }
+          ?>
+        </select>
+        <button onclick="confirmarGuiche()">Confirmar</button>
+      </div>
+    </div>
+  <?php endif; ?>
+
+  <script>
+    function chamarSenha() {
+      fetch('chamar_senha.php', {
+        method: 'POST'
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          document.querySelector('.em-atendimento strong').innerText = data.senha;
+        } else {
+          alert('Não há senhas aguardando.');
+        }
+      });
+    }
+
+    function confirmarGuiche() {
+      const id_guiche = document.getElementById('selectGuiche').value;
+
+      if (!id_guiche) {
+        alert("Selecione um guichê.");
+        return;
+      }
+
+      fetch('selecionar_guiche.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'id_guiche=' + id_guiche
+      })
+      .then(res => res.json())
+      .then(json => {
+        if (json.success) {
+          location.reload();
+        } else {
+          alert('Erro ao selecionar guichê. Tente novamente.');
+        }
+      })
+      .catch(err => {
+        alert('Erro: ' + err);
+      });
+    }
+  </script>
 </body>
 </html>

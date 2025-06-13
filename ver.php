@@ -40,59 +40,68 @@ $conn->close();
 ?>
 
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <title>Chamado de Senhas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="refresh" content="5">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       font-family: 'Inter', sans-serif;
-      background: linear-gradient(to right, #e0ecff, #f1f5ff);
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
     }
+
     .container {
       background: white;
       padding: 40px;
       border-radius: 16px;
       box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
       text-align: center;
-      max-width: 500px;
-      width: 90%;
+      max-width: 600px;
+      width: 95%;
     }
+
     h1 {
-      font-size: 22px;
+      font-size: 27px;
       color: #1e3a8a;
       margin-bottom: 20px;
       font-weight: 600;
     }
+
     .linha {
       border-top: 3px solid #1e3a8a;
       margin: 20px 0 30px;
     }
+
     .proxima, .aguarde {
-      font-size: 18px;
+      font-size: 20px;
       color: #333;
       margin: 20px 0;
     }
+
     .senha-destaque {
       display: inline-block;
-      background: #1e3a8a;
-      color: white;
+      color: black;
       padding: 12px 24px;
-      font-size: 28px;
+      font-size: 35px;
       font-weight: bold;
       border-radius: 8px;
       margin-top: 10px;
       letter-spacing: 2px;
     }
+
     .aguarde {
       color: #666;
-      font-style: italic;
       margin-top: 30px;
     }
   </style>

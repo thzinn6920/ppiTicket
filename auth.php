@@ -27,10 +27,12 @@ if ($user = $result->fetch_assoc()) {
         // Salva id_atendente para uso posterior (como no logout)
         $_SESSION['id_atendente'] = $user['id_atendente'];
 
-        // Redireciona conforme o nível
         if ($user['nivel'] === 'admin') {
             header("Location: adminPainel.php");
         } else {
+            // Desvincula o atendente do guichê, se estiver vinculado
+            $conn->query("DELETE FROM ocupacao_guiches WHERE id_atendente = " . intval($user['id_atendente']));
+
             $_SESSION['atendente_logado'] = true;
             header("Location: telaAtendente.php");
         }
