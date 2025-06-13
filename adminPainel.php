@@ -1,4 +1,7 @@
-<?php session_start(); ?>
+<?php
+ob_start(); // Inicia o buffer de saída
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -53,9 +56,9 @@
       <h2>👤 Criar Atendente</h2>
       <div class="form-container">
         <?php if (isset($_SESSION['admin_msg'])): ?>
-          <div class="alert alert-info"><?= $_SESSION['admin_msg']; unset($_SESSION['admin_msg']); ?></div>
+          <div class="alert alert-info"><?php echo $_SESSION['admin_msg']; unset($_SESSION['admin_msg']); ?></div>
         <?php endif; ?>
-        <form method="post" action="">
+        <form method="post" action="adminPainel.php#criar">
           <div class="mb-3">
             <label>Nome:</label>
             <input type="text" name="nome" class="form-control" required>
@@ -72,6 +75,19 @@
             <label>Senha:</label>
             <input type="password" name="senha" class="form-control" required>
           </div>
+          <div class="mb-3">
+            <label>Guichê:</label>
+            <select name="id_guiche" class="form-control" required>
+              <?php
+                $conn = new mysqli('localhost', 'root', '', 'fila');
+                $res = $conn->query("SELECT id_guiche, nome FROM guiches");
+                while ($row = $res->fetch_assoc()) {
+                  echo "<option value='{$row['id_guiche']}'>{$row['nome']}</option>";
+                }
+                $conn->close();
+              ?>
+            </select>
+          </div>
           <button type="submit" name="criar_atendente" class="btn btn-primary w-100">Criar Usuário</button>
         </form>
       </div>
@@ -82,23 +98,10 @@
       <div class="form-container">
         <?php if (isset($_SESSION['guiche_msg'])): ?>
           <div class="alert alert-warning d-flex align-items-center" role="alert">
-  <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Atenção:">
-    <use xlink:href="#exclamation-triangle-fill"/>
-  </svg>
-  <div>
-    <?= $_SESSION['guiche_msg']; unset($_SESSION['guiche_msg']); ?>
-  </div>
+  <?php echo $_SESSION['guiche_msg']; unset($_SESSION['guiche_msg']); ?>
 </div>
-
-<!-- Adicione no <head> ou logo antes do fechamento </body>: -->
-<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
-  <symbol id="exclamation-triangle-fill" fill="currentColor" viewBox="0 0 16 16">
-    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.964 0L.165 13.233c-.457.778.091 1.767.982 1.767h13.707c.89 0 1.438-.99.982-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1-2.002 0 1 1 0 0 1 2.002 0z"/>
-  </symbol>
-</svg>
-
         <?php endif; ?>
-        <form method="post" action="">
+        <form method="post" action="adminPainel.php#criarGuiche">
           <div class="mb-3">
             <label>Nome do Guichê:</label>
             <input type="text" name="nome_guiche" class="form-control" maxlength="20" required placeholder="Ex: Guichê 01">
@@ -122,14 +125,9 @@
           <tbody>
             <?php
               $conn = new mysqli('localhost', 'root', '', 'fila');
-              $res = $conn->query("SELECT a.nome, a.email, g.nome AS guiche FROM atendentes a 
-                                   INNER JOIN guiches g ON a.id_guiche = g.id_guiche");
+              $res = $conn->query("SELECT a.nome, a.email, g.nome AS guiche FROM atendentes a INNER JOIN guiches g ON a.id_guiche = g.id_guiche");
               while ($row = $res->fetch_assoc()) {
-                echo "<tr>
-                        <td>{$row['nome']}</td>
-                        <td>{$row['email']}</td>
-                        <td>{$row['guiche']}</td>
-                      </tr>";
+                echo "<tr><td>{$row['nome']}</td><td>{$row['email']}</td><td>{$row['guiche']}</td></tr>";
               }
               $conn->close();
             ?>
@@ -145,7 +143,6 @@
       document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
       document.getElementById(id).classList.add('active');
       if (link) link.classList.add('active');
-
       if (id === 'dashboard') carregarDashboard();
       window.location.hash = id;
     }
@@ -156,30 +153,9 @@
         .then(data => {
           document.getElementById('dashboardDados').innerHTML = `
             <div class="row">
-              <div class="col-md-4">
-                <div class="card text-white bg-primary mb-3">
-                  <div class="card-body">
-                    <h5 class="card-title">Total de Atendimentos</h5>
-                    <p class="card-text fs-3">${data.total}</p>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="card text-white bg-success mb-3">
-                  <div class="card-body">
-                    <h5 class="card-title">Concluídos</h5>
-                    <p class="card-text fs-3">${data.concluidos}</p>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="card text-white bg-warning mb-3">
-                  <div class="card-body">
-                    <h5 class="card-title">Em Atendimento</h5>
-                    <p class="card-text fs-3">${data.emAtendimento}</p>
-                  </div>
-                </div>
-              </div>
+              <div class="col-md-4"><div class="card text-white bg-primary mb-3"><div class="card-body"><h5 class="card-title">Total de Atendimentos</h5><p class="card-text fs-3">${data.total}</p></div></div></div>
+              <div class="col-md-4"><div class="card text-white bg-success mb-3"><div class="card-body"><h5 class="card-title">Concluídos</h5><p class="card-text fs-3">${data.concluidos}</p></div></div></div>
+              <div class="col-md-4"><div class="card text-white bg-warning mb-3"><div class="card-body"><h5 class="card-title">Em Atendimento</h5><p class="card-text fs-3">${data.emAtendimento}</p></div></div></div>
             </div>
           `;
         });
@@ -199,7 +175,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['criar_atendente'])) {
   $conn = new mysqli('localhost', 'root', '', 'fila');
   if ($conn->connect_error) {
     $_SESSION['admin_msg'] = "Erro de conexão: " . $conn->connect_error;
-    header("Location: admin_painel.php#criar");
+    header("Location: adminPainel.php#criar");
     exit;
   }
 
@@ -208,6 +184,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['criar_atendente'])) {
   $email = $_POST['email'];
   $senha = password_hash($_POST['senha'], PASSWORD_DEFAULT);
   $nivel = 'atendente';
+  $id_guiche = $_POST['id_guiche'];
 
   $stmt = $conn->prepare("SELECT 1 FROM atendentes WHERE email = ?");
   $stmt->bind_param("s", $email);
@@ -218,14 +195,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['criar_atendente'])) {
     $_SESSION['admin_msg'] = "⚠️ Esse email já está cadastrado.";
     $stmt->close();
     $conn->close();
-    header("Location: admin_painel.php#criar");
+    header("Location: adminPainel.php#criar");
     exit;
   }
 
   $stmt->close();
 
-  $stmt = $conn->prepare("INSERT INTO atendentes (nome, matricula, email, senha, nivel) VALUES (?, ?, ?, ?, ?)");
-  $stmt->bind_param("sisss", $nome, $matricula, $email, $senha, $nivel);
+  $stmt = $conn->prepare("INSERT INTO atendentes (nome, matricula, email, senha, nivel, id_guiche) VALUES (?, ?, ?, ?, ?, ?)");
+  $stmt->bind_param("sisssi", $nome, $matricula, $email, $senha, $nivel, $id_guiche);
   if ($stmt->execute()) {
     $_SESSION['admin_msg'] = "✅ Usuário criado com sucesso!";
   } else {
@@ -235,7 +212,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['criar_atendente'])) {
   $stmt->close();
   $conn->close();
 
-  header("Location: admin_painel.php#criar");
+  header("Location: adminPainel.php#criar");
   exit;
 }
 
@@ -243,7 +220,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['criar_guiche'])) {
   $conn = new mysqli('localhost', 'root', '', 'fila');
   if ($conn->connect_error) {
     $_SESSION['guiche_msg'] = "Erro de conexão: " . $conn->connect_error;
-    header("Location: admin_painel.php#criarGuiche");
+    header("Location: adminPainel.php#criarGuiche");
     exit;
   }
 
@@ -258,9 +235,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['criar_guiche'])) {
     $_SESSION['guiche_msg'] = "⚠️ Já existe um guichê com esse nome.";
     $stmt->close();
     $conn->close();
-    header("Location: admin_painel.php#criarGuiche");
+    header("Location: adminPainel.php#criarGuiche");
     exit;
   }
+
   $stmt->close();
 
   $stmt = $conn->prepare("INSERT INTO guiches (nome) VALUES (?)");
@@ -270,10 +248,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['criar_guiche'])) {
   } else {
     $_SESSION['guiche_msg'] = "Erro ao criar guichê: " . $stmt->error;
   }
+
   $stmt->close();
   $conn->close();
 
-  header("Location: admin_painel.php#criarGuiche");
+  header("Location: adminPainel.php#criarGuiche");
   exit;
 }
 ?>
