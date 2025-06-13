@@ -76,9 +76,7 @@ $stmt->close();
 
       <div class="card-top">
         <div class="left-side">
-          <form method="POST" action="chamar_senha.php">
-            <button type= "submit" class="btn-call">Chamar próxima senha</button>
-          </form>
+          <button onclick="chamarSenha()" class="btn-call">Chamar próxima senha</button>
         </div>
         <div class="right-side">
           <div class="user-info">
@@ -88,36 +86,39 @@ $stmt->close();
           </div>
         </div>
       </div>
+
       <div class="em-atendimento">
         <span>Em atendimento:</span><br />
         <strong><?php echo isset($_SESSION['senha_chamada']) ? $_SESSION['senha_chamada'] : '– – – –'; ?></strong>
       </div>
 
-      <form class="form-section" id="formAtendimento" method="POST">
+      <form class="form-section" id="formAtendimento" method="POST" action="finalizar_atendimento.php">
         <label>Assunto do Atendimento</label>
         <select name="tipo_de_servico" required>
-          <option value="">Selecione</option>
-          <?php
-            $sql = "SELECT id_assunto, descricao FROM assuntos_atendimento ORDER BY descricao";
-            $result = $conn->query($sql);
-            while ($row = $result->fetch_assoc()) {
-                echo '<option value="' . htmlspecialchars($row['descricao']) . '">' . htmlspecialchars($row['descricao']) . '</option>';
-            }
-          ?>
+          <option value="">Selecione o tipo de serviço</option>
+          <option value="certidao_nascimento">Certidão de nascimento</option>
+          <option value="certidao_casamento">Certidão de casamento</option>
+          <option value="certidao_obito">Certidão de óbito</option>
+          <option value="registro_imovel">Registro de imóvel</option>
+          <option value="reconhecimento_firma">Reconhecimento de firma</option>
+          <option value="procuracao">Procuração</option>
+          <option value="protesto_titulo">Protesto de título</option>
+          <option value="registro_td">Registro de títulos e documentos</option>
+          <option value="apostilamento">Apostilamento / tradução</option>
+          <option value="outros">Outros serviços</option>
         </select>
 
-
         <input type="hidden" name="id_atendente" value="<?= $id_atendente ?>" />
+        <input type="hidden" name="senha_nome" value="<?= isset($_SESSION['senha_chamada']) ? $_SESSION['senha_chamada'] : '' ?>">
 
         <div class="form-buttons">
-          <button type="submit" class="btn-finalizar">Finalizar Atendimento</button>
-          <button type="button" class="btn-ausente">Cliente ausente</button>
+          <button type="submit" name="finalizar" class="btn-finalizar">Finalizar Atendimento</button>
+          <button type="submit" name="ausente" class="btn-ausente">Cliente ausente</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Modal seleção de guichê -->
   <?php if (!$guiche_nome): ?>
     <div class="modal" id="modalGuiche">
       <div class="modal-content">
@@ -138,6 +139,20 @@ $stmt->close();
   <?php endif; ?>
 
   <script>
+    function chamarSenha() {
+      fetch('chamar_senha.php', {
+        method: 'POST'
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          document.querySelector('.em-atendimento strong').innerText = data.senha;
+        } else {
+          alert('Não há senhas aguardando.');
+        }
+      });
+    }
+
     function confirmarGuiche() {
       const id_guiche = document.getElementById('selectGuiche').value;
 
