@@ -1,69 +1,40 @@
 <?php
 session_start();
-require 'config.php';
+require_once 'config.php';
 
 if (!isset($_SESSION['atendente_logado']) || $_SESSION['atendente_logado'] !== true) {
     header("Location: login.php");
     exit();
 }
 
-$id_atendente = $_SESSION['id_atendente'];
+// Recupera nome, guichê e id do atendente
+$nomeAtendente = $_SESSION['usuario_nome'];
+$idAtendente = $_SESSION['usuario_id'];
 
-// Buscar nome e guichê do atendente
-$sql = "SELECT a.nome, g.nome AS guiche
-        FROM atendentes a
-        LEFT JOIN ocupacao_guiches og ON og.id_atendente = a.id_atendente
-        LEFT JOIN guiches g ON g.id_guiche = og.id_guiche
-        WHERE a.id_atendente = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $id_atendente);
+$stmt = $conn->prepare("SELECT g.nome AS guiche_nome FROM guiches g 
+    INNER JOIN ocupacao_guiches og ON g.id_guiche = og.id_guiche 
+    WHERE og.id_atendente = ?");
+$stmt->bind_param("i", $idAtendente);
 $stmt->execute();
-$stmt->bind_result($nome_atendente, $guiche_nome);
-$stmt->fetch();
-$stmt->close();
+$result = $stmt->get_result();
+$guiche = $result->fetch_assoc();
+$guicheNome = $guiche ? $guiche['guiche_nome'] : '—';
+
+// Busca os assuntos
+$assuntos = [];
+$res = $conn->query("SELECT id_assunto, descricao FROM assuntos_atendimento ORDER BY descricao");
+while ($row = $res->fetch_assoc()) {
+    $assuntos[] = $row;
+}
 ?>
 
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Painel do Atendente</title>
   <link rel="stylesheet" href="telaAtendente.css" />
-  <style>
-    .modal {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background-color: rgba(0,0,0,0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 10;
-    }
-
-    .modal-content {
-      background-color: white;
-      padding: 30px;
-      border-radius: 10px;
-      text-align: center;
-      width: 300px;
-    }
-
-    .modal select {
-      padding: 8px;
-      width: 100%;
-      margin-bottom: 15px;
-    }
-
-    .modal button {
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      padding: 10px;
-      width: 100%;
-      border-radius: 5px;
-    }
-  </style>
 </head>
 <body>
   <div class="header">
@@ -77,19 +48,22 @@ $stmt->close();
       <div class="card-top">
         <div class="left-side">
           <button onclick="chamarSenha()" class="btn-call">Chamar próxima senha</button>
+          <form action="chamar_senha.php" method="POST">
+            <button type="submit" class="btn-call">Chamar próxima senha</button>
+          </form>
         </div>
         <div class="right-side">
           <div class="user-info">
-            <span>Atendente: <?= htmlspecialchars($nome_atendente) ?></span><br />
-            <span>Guichê: <?= $guiche_nome ? htmlspecialchars($guiche_nome) : 'Não selecionado' ?></span><br />
-            <span>Senhas atendidas: 0</span>
+            <span>Atendente: <?php echo htmlspecialchars($nomeAtendente); ?></span><br />
+            <span>Guichê: <?php echo htmlspecialchars($guicheNome); ?></span><br />
+            <span>Senhas atendidas: —</span>
           </div>
         </div>
       </div>
 
       <div class="em-atendimento">
         <span>Em atendimento:</span><br />
-        <strong><?php echo isset($_SESSION['senha_chamada']) ? $_SESSION['senha_chamada'] : '– – – –'; ?></strong>
+        <strong><?php echo $_SESSION['senha_chamada'] ?? '– – – –'; ?></strong>
       </div>
 
       <form class="form-section" id="formAtendimento" method="POST" action="finalizar_atendimento.php">
@@ -114,6 +88,23 @@ $stmt->close();
         <div class="form-buttons">
           <button type="submit" name="finalizar" class="btn-finalizar">Finalizar Atendimento</button>
           <button type="submit" name="ausente" class="btn-ausente">Cliente ausente</button>
+      <form class="form-section" action="finalizar_atendimento.php" method="POST">
+        <label>Assunto do Atendimento</label>
+        <select name="tipo_de_servico" required>
+          <option value="">Selecione</option>
+          <?php foreach ($assuntos as $assunto): ?>
+            <option value="<?php echo htmlspecialchars($assunto['descricao']); ?>">
+              <?php echo htmlspecialchars($assunto['descricao']); ?>
+            </option>
+          <?php endforeach; ?>
+        </select>
+
+        <input type="hidden" name="senha_nome" value="<?php echo $_SESSION['senha_chamada'] ?? ''; ?>">
+        <input type="hidden" name="id_atendente" value="<?php echo $idAtendente; ?>">
+
+        <div class="form-buttons">
+          <button type="submit" class="btn-finalizar">Finalizar Atendimento</button>
+          <button type="button" class="btn-ausente" onclick="alert('Cliente ausente — ação a ser implementada');">Cliente ausente</button>
         </div>
       </form>
     </div>
