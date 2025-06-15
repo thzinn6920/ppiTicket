@@ -31,7 +31,6 @@ if ($ultima && preg_match('/^[CP]\d{3}$/', $ultima['nome'])) {
 
 $novaSenha = $prefixo . str_pad($numero, 3, '0', STR_PAD_LEFT);
 
-// Inserir nova senha sem assunto nem cpf
 $data = date('Y-m-d');
 $hora = date('H:i:s');
 $stmt = $pdo->prepare("INSERT INTO senhas (data_emissao, hora_emissao, nome, status) VALUES (?, ?, ?, 'aguardando')");

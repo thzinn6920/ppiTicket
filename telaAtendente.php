@@ -21,6 +21,14 @@ $stmt->execute();
 $stmt->bind_result($nome_atendente, $guiche_nome);
 $stmt->fetch();
 $stmt->close();
+
+// Buscar total de senhas atendidas
+$stmt = $conn->prepare("SELECT COUNT(*) FROM atendimentos WHERE id_atendente = ?");
+$stmt->bind_param("i", $id_atendente);
+$stmt->execute();
+$stmt->bind_result($total_atendimentos);
+$stmt->fetch();
+$stmt->close();
 ?>
 
 <!DOCTYPE html>
@@ -76,24 +84,24 @@ $stmt->close();
 
       <div class="card-top">
         <div class="left-side">
-          <form method="POST" action="chamar_senha.php">
-            <button type= "submit" class="btn-call">Chamar próxima senha</button>
-          </form>
+          <button id="btnChamarSenha" class="btn-call" type="button">Chamar próxima senha</button>
         </div>
         <div class="right-side">
           <div class="user-info">
             <span>Atendente: <?= htmlspecialchars($nome_atendente) ?></span><br />
             <span>Guichê: <?= $guiche_nome ? htmlspecialchars($guiche_nome) : 'Não selecionado' ?></span><br />
-            <span>Senhas atendidas: 0</span>
+            <span>Senhas atendidas: <?= $total_atendimentos ?></span>
           </div>
         </div>
       </div>
+
       <div class="em-atendimento">
         <span>Em atendimento:</span><br />
         <strong><?php echo isset($_SESSION['senha_chamada']) ? $_SESSION['senha_chamada'] : '– – – –'; ?></strong>
       </div>
 
-      <form class="form-section" id="formAtendimento" method="POST">
+      <!-- Formulário de finalização -->
+      <form class="form-section" id="formAtendimento" method="POST" action="finalizar_atendimento.php">
         <label>Assunto do Atendimento</label>
         <select name="tipo_de_servico" required>
           <option value="">Selecione</option>
@@ -106,12 +114,12 @@ $stmt->close();
           ?>
         </select>
 
-
         <input type="hidden" name="id_atendente" value="<?= $id_atendente ?>" />
+        <input type="hidden" name="senha_nome" id="inputSenhaNome" value="<?= isset($_SESSION['senha_chamada']) ? $_SESSION['senha_chamada'] : '' ?>">
 
         <div class="form-buttons">
           <button type="submit" class="btn-finalizar">Finalizar Atendimento</button>
-          <button type="button" class="btn-ausente">Cliente ausente</button>
+          <button type="button" class="btn-ausente" onclick="window.location.href='cliente_ausente.php'">Cliente ausente</button>
         </div>
       </form>
     </div>
@@ -138,6 +146,30 @@ $stmt->close();
   <?php endif; ?>
 
   <script>
+    document.getElementById('btnChamarSenha').addEventListener('click', function () {
+      fetch('chamar_senha.php', {
+        method: 'GET',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          document.querySelector('.em-atendimento strong').innerText = data.senha;
+          document.getElementById('inputSenhaNome').value = data.senha;
+
+          const beep = new Audio('beep.mp3');
+          beep.play();
+        } else {
+          alert(data.error || 'Nenhuma senha aguardando.');
+        }
+      })
+      .catch(() => {
+        alert('Erro ao chamar senha.');
+      });
+    });
+
     function confirmarGuiche() {
       const id_guiche = document.getElementById('selectGuiche').value;
 

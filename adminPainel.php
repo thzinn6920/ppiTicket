@@ -75,19 +75,7 @@ session_start();
             <label>Senha:</label>
             <input type="password" name="senha" class="form-control" required>
           </div>
-          <div class="mb-3">
-            <label>Guichê:</label>
-            <select name="id_guiche" class="form-control" required>
-              <?php
-                $conn = new mysqli('localhost', 'root', '', 'fila');
-                $res = $conn->query("SELECT id_guiche, nome FROM guiches");
-                while ($row = $res->fetch_assoc()) {
-                  echo "<option value='{$row['id_guiche']}'>{$row['nome']}</option>";
-                }
-                $conn->close();
-              ?>
-            </select>
-          </div>
+          
           <button type="submit" name="criar_atendente" class="btn btn-primary w-100">Criar Usuário</button>
         </form>
       </div>
@@ -158,7 +146,7 @@ session_start();
                 <div class="card text-white bg-success mb-3">
                   <div class="card-body">
                     <h5 class="card-title">Concluídos</h5>
-                    <p class="card-text fs-3">${data.total}</p>
+                    <p class="card-text fs-3">${data.concluidos}</p>
                   </div>
                 </div>
               </div>
@@ -166,7 +154,7 @@ session_start();
               <div class="col-md-3">
                 <div class="card text-white bg-warning mb-3">
                   <div class="card-body">
-                    <h5 class="card-title">Em Atendimento</h5>
+                    <h5 class="card-title">Aguardando Atendimento</h5>
                     <p class="card-text fs-3">${data.aguardando}</p>
                   </div>
                 </div>
