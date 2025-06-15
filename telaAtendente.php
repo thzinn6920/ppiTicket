@@ -117,9 +117,10 @@ $stmt->close();
         <input type="hidden" name="id_atendente" value="<?= $id_atendente ?>" />
         <input type="hidden" name="senha_nome" id="inputSenhaNome" value="<?= isset($_SESSION['senha_chamada']) ? $_SESSION['senha_chamada'] : '' ?>">
 
+        <?php $temSenha = !empty($_SESSION['senha_chamada']); ?>
         <div class="form-buttons">
-          <button type="submit" class="btn-finalizar">Finalizar Atendimento</button>
-          <button type="button" class="btn-ausente" onclick="window.location.href='cliente_ausente.php'">Cliente ausente</button>
+          <button id="btnFinalizar" type="submit" class="btn-finalizar">Finalizar Atendimento</button>
+          <button id="btnAusente" type="button" class="btn-ausente" onclick="window.location.href='cliente_ausente.php'">Cliente ausente</button>
         </div>
       </form>
     </div>
