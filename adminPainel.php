@@ -1,5 +1,5 @@
 <?php
-ob_start(); // Inicia o buffer de saída
+ob_start();
 session_start();
 ?>
 <!DOCTYPE html>
@@ -8,11 +8,23 @@ session_start();
   <meta charset="UTF-8">
   <title>Painel do Administrador</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="admin.css">
   <style>
     .section { display: none; }
     .section.active { display: block; }
     .form-container { max-width: 500px; margin-top: 20px; }
+    .sidebar {
+      width: 200px;
+      position: fixed;
+      top: 0; left: 0; height: 100%;
+      background: #343a40; color: white;
+      padding: 20px;
+    }
+    .content {
+      margin-left: 220px;
+      padding: 20px;
+    }
+    .nav-link { color: white; margin: 5px 0; }
+    .nav-link.active { font-weight: bold; color: #0d6efd; }
   </style>
 </head>
 <body>
@@ -23,6 +35,7 @@ session_start();
       <a href="#metricas" class="nav-link" onclick="mostrarSecao('metricas', this)">📈 Métricas</a>
       <a href="#criar" class="nav-link" onclick="mostrarSecao('criar', this)">👤 Criar Atendente</a>
       <a href="#criarGuiche" class="nav-link" onclick="mostrarSecao('criarGuiche', this)">🏢 Criar Guichê</a>
+      <a href="#criarAssunto" class="nav-link" onclick="mostrarSecao('criarAssunto', this)">📝 Criar Assunto</a>
       <a href="#online" class="nav-link" onclick="mostrarSecao('online', this)">🟢 Atendentes Online</a>
     </nav>
   </div>
@@ -75,7 +88,6 @@ session_start();
             <label>Senha:</label>
             <input type="password" name="senha" class="form-control" required>
           </div>
-          
           <button type="submit" name="criar_atendente" class="btn btn-primary w-100">Criar Usuário</button>
         </form>
       </div>
@@ -85,9 +97,7 @@ session_start();
       <h2>🏢 Criar Guichê</h2>
       <div class="form-container">
         <?php if (isset($_SESSION['guiche_msg'])): ?>
-          <div class="alert alert-warning d-flex align-items-center" role="alert">
-  <?php echo $_SESSION['guiche_msg']; unset($_SESSION['guiche_msg']); ?>
-</div>
+          <div class="alert alert-warning"><?php echo $_SESSION['guiche_msg']; unset($_SESSION['guiche_msg']); ?></div>
         <?php endif; ?>
         <form method="post" action="adminPainel.php#criarGuiche">
           <div class="mb-3">
@@ -95,6 +105,22 @@ session_start();
             <input type="text" name="nome_guiche" class="form-control" maxlength="20" required placeholder="Ex: Guichê 01">
           </div>
           <button type="submit" name="criar_guiche" class="btn btn-primary w-100">Criar Guichê</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="criarAssunto" class="section">
+      <h2>📝 Criar Assunto</h2>
+      <div class="form-container">
+        <?php if (isset($_SESSION['assunto_msg'])): ?>
+          <div class="alert alert-warning"><?php echo $_SESSION['assunto_msg']; unset($_SESSION['assunto_msg']); ?></div>
+        <?php endif; ?>
+        <form method="post" action="adminPainel.php#criarAssunto">
+          <div class="mb-3">
+            <label>Descrição do assunto:</label>
+            <input type="text" name="descricao_assunto" class="form-control" maxlength="100" required placeholder="Ex: Financeiro">
+          </div>
+          <button type="submit" name="criar_assunto" class="btn btn-primary w-100">Criar Assunto</button>
         </form>
       </div>
     </div>
@@ -113,7 +139,7 @@ session_start();
           <tbody>
             <?php
               $conn = new mysqli('localhost', 'root', '', 'fila');
-              $res = $conn->query("SELECT a.nome, a.email, g.nome AS guiche FROM atendentes a INNER JOIN guiches g ON a.id_guiche = g.id_guiche");
+              $res = $conn->query("SELECT a.nome, a.email, g.nome AS guiche FROM atendentes a LEFT JOIN guiches g ON a.id_guiche = g.id_guiche");
               while ($row = $res->fetch_assoc()) {
                 echo "<tr><td>{$row['nome']}</td><td>{$row['email']}</td><td>{$row['guiche']}</td></tr>";
               }
@@ -141,7 +167,6 @@ session_start();
         .then(data => {
           document.getElementById('dashboardDados').innerHTML = `
             <div class="row">
-
               <div class="col-md-3">
                 <div class="card text-white bg-success mb-3">
                   <div class="card-body">
@@ -150,7 +175,6 @@ session_start();
                   </div>
                 </div>
               </div>
-
               <div class="col-md-3">
                 <div class="card text-white bg-warning mb-3">
                   <div class="card-body">
@@ -159,7 +183,6 @@ session_start();
                   </div>
                 </div>
               </div>
-
               <div class="col-md-12">
                 <div class="card text-white bg-dark mb-3">
                   <div class="card-body">
@@ -168,11 +191,9 @@ session_start();
                   </div>
                 </div>
               </div>
-            </div>
-          `;
+            </div>`;
         });
     }
-
 
     window.onload = () => {
       const hash = window.location.hash.replace('#', '') || 'dashboard';
@@ -184,6 +205,7 @@ session_start();
 </html>
 
 <?php
+// Criar Atendente
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['criar_atendente'])) {
   $conn = new mysqli('localhost', 'root', '', 'fila');
   if ($conn->connect_error) {
@@ -197,7 +219,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['criar_atendente'])) {
   $email = $_POST['email'];
   $senha = password_hash($_POST['senha'], PASSWORD_DEFAULT);
   $nivel = 'atendente';
-  $id_guiche = $_POST['id_guiche'];
 
   $stmt = $conn->prepare("SELECT 1 FROM atendentes WHERE email = ?");
   $stmt->bind_param("s", $email);
@@ -206,29 +227,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['criar_atendente'])) {
 
   if ($stmt->num_rows > 0) {
     $_SESSION['admin_msg'] = "⚠️ Esse email já está cadastrado.";
-    $stmt->close();
-    $conn->close();
+    $stmt->close(); $conn->close();
     header("Location: adminPainel.php#criar");
     exit;
   }
 
   $stmt->close();
 
-  $stmt = $conn->prepare("INSERT INTO atendentes (nome, matricula, email, senha, nivel, id_guiche) VALUES (?, ?, ?, ?, ?, ?)");
-  $stmt->bind_param("sisssi", $nome, $matricula, $email, $senha, $nivel, $id_guiche);
+  $stmt = $conn->prepare("INSERT INTO atendentes (nome, matricula, email, senha, nivel) VALUES (?, ?, ?, ?, ?)");
+  $stmt->bind_param("sisss", $nome, $matricula, $email, $senha, $nivel);
   if ($stmt->execute()) {
     $_SESSION['admin_msg'] = "✅ Usuário criado com sucesso!";
   } else {
     $_SESSION['admin_msg'] = "Erro ao criar usuário: " . $stmt->error;
   }
 
-  $stmt->close();
-  $conn->close();
-
+  $stmt->close(); $conn->close();
   header("Location: adminPainel.php#criar");
   exit;
 }
 
+// Criar Guichê
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['criar_guiche'])) {
   $conn = new mysqli('localhost', 'root', '', 'fila');
   if ($conn->connect_error) {
@@ -238,16 +257,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['criar_guiche'])) {
   }
 
   $nome_guiche = trim($_POST['nome_guiche']);
-
   $stmt = $conn->prepare("SELECT 1 FROM guiches WHERE nome = ?");
   $stmt->bind_param("s", $nome_guiche);
-  $stmt->execute();
-  $stmt->store_result();
+  $stmt->execute(); $stmt->store_result();
 
   if ($stmt->num_rows > 0) {
     $_SESSION['guiche_msg'] = "⚠️ Já existe um guichê com esse nome.";
-    $stmt->close();
-    $conn->close();
+    $stmt->close(); $conn->close();
     header("Location: adminPainel.php#criarGuiche");
     exit;
   }
@@ -256,16 +272,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['criar_guiche'])) {
 
   $stmt = $conn->prepare("INSERT INTO guiches (nome) VALUES (?)");
   $stmt->bind_param("s", $nome_guiche);
-  if ($stmt->execute()) {
-    $_SESSION['guiche_msg'] = "✅ Guichê criado com sucesso!";
-  } else {
-    $_SESSION['guiche_msg'] = "Erro ao criar guichê: " . $stmt->error;
+  $_SESSION['guiche_msg'] = $stmt->execute() ? "✅ Guichê criado com sucesso!" : "Erro: " . $stmt->error;
+
+  $stmt->close(); $conn->close();
+  header("Location: adminPainel.php#criarGuiche");
+  exit;
+}
+
+// Criar Assunto
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['criar_assunto'])) {
+  $conn = new mysqli('localhost', 'root', '', 'fila');
+  if ($conn->connect_error) {
+    $_SESSION['assunto_msg'] = "Erro de conexão: " . $conn->connect_error;
+    header("Location: adminPainel.php#criarAssunto");
+    exit;
+  }
+
+  $descricao = trim($_POST['descricao_assunto']);
+  $stmt = $conn->prepare("SELECT 1 FROM assuntos_atendimento WHERE descricao = ?");
+  $stmt->bind_param("s", $descricao);
+  $stmt->execute(); $stmt->store_result();
+
+  if ($stmt->num_rows > 0) {
+    $_SESSION['assunto_msg'] = "⚠️ Esse assunto já existe.";
+    $stmt->close(); $conn->close();
+    header("Location: adminPainel.php#criarAssunto");
+    exit;
   }
 
   $stmt->close();
-  $conn->close();
+  $stmt = $conn->prepare("INSERT INTO assuntos_atendimento (descricao) VALUES (?)");
+  $stmt->bind_param("s", $descricao);
+  $_SESSION['assunto_msg'] = $stmt->execute() ? "✅ Assunto criado com sucesso!" : "Erro: " . $stmt->error;
 
-  header("Location: adminPainel.php#criarGuiche");
+  $stmt->close(); $conn->close();
+  header("Location: adminPainel.php#criarAssunto");
   exit;
 }
 ?>

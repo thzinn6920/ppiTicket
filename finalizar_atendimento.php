@@ -15,6 +15,11 @@ if (!isset($_SESSION['senha_chamada'])) {
 
 $senha_nome = $_POST['senha_nome'] ?? $_SESSION['senha_chamada'];
 $id_atendente = $_POST['id_atendente'] ?? $_SESSION['id_atendente'];
+$assunto_id = $_POST['assunto_id'] ?? null;
+
+if (!$assunto_id) {
+    die("Assunto não selecionado.");
+}
 
 // Busca a senha no banco
 $stmt = $conn->prepare("SELECT id_senha, data_emissao, hora_emissao FROM senhas WHERE nome = ?");
@@ -38,7 +43,7 @@ $emissao = new DateTime($senha['data_emissao'] . ' ' . $senha['hora_emissao']);
 $diff = $emissao->diff($agora);
 $tempo_espera_segundos = ($diff->days * 86400) + ($diff->h * 3600) + ($diff->i * 60) + $diff->s;
 
-// Simula tempo de atendimento entre 3 e 10 minutos (em segundos)
+// Simula tempo de atendimento entre 3 e 10 minutos
 $tempo_atendimento = rand(180, 600);
 
 // Define data/hora
@@ -50,20 +55,21 @@ $update = $conn->prepare("UPDATE senhas SET status = 'atendido' WHERE id_senha =
 $update->bind_param("i", $id_senha);
 $update->execute();
 
-// Insere o registro de atendimento
+// Insere o registro de atendimento com assunto_id
 $insert = $conn->prepare("INSERT INTO atendimentos (
     id_senha, id_atendente, data_atendimento, hora_chamada,
-    tempo_espera, tempo_atendimento, observacoes
-) VALUES (?, ?, ?, ?, ?, ?, '')");
+    tempo_espera, tempo_atendimento, assunto_id
+) VALUES (?, ?, ?, ?, ?, ?, ?)");
 
 $insert->bind_param(
-    "iissii",
+    "iissiii",
     $id_senha,
     $id_atendente,
     $data_atendimento,
     $hora_chamada,
     $tempo_espera_segundos,
-    $tempo_atendimento
+    $tempo_atendimento,
+    $assunto_id
 );
 
 $insert->execute();

@@ -103,13 +103,13 @@ $stmt->close();
       <!-- Formulário de finalização -->
       <form class="form-section" id="formAtendimento" method="POST" action="finalizar_atendimento.php">
         <label>Assunto do Atendimento</label>
-        <select name="tipo_de_servico" required>
+        <select name="assunto_id" required>
           <option value="">Selecione</option>
           <?php
             $sql = "SELECT id_assunto, descricao FROM assuntos_atendimento ORDER BY descricao";
             $result = $conn->query($sql);
             while ($row = $result->fetch_assoc()) {
-                echo '<option value="' . htmlspecialchars($row['descricao']) . '">' . htmlspecialchars($row['descricao']) . '</option>';
+                echo '<option value="' . htmlspecialchars($row['id_assunto']) . '">' . htmlspecialchars($row['descricao']) . '</option>';
             }
           ?>
         </select>
