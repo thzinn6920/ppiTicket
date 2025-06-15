@@ -153,13 +153,38 @@ session_start();
         .then(data => {
           document.getElementById('dashboardDados').innerHTML = `
             <div class="row">
-              <div class="col-md-4"><div class="card text-white bg-primary mb-3"><div class="card-body"><h5 class="card-title">Total de Atendimentos</h5><p class="card-text fs-3">${data.total}</p></div></div></div>
-              <div class="col-md-4"><div class="card text-white bg-success mb-3"><div class="card-body"><h5 class="card-title">Concluídos</h5><p class="card-text fs-3">${data.concluidos}</p></div></div></div>
-              <div class="col-md-4"><div class="card text-white bg-warning mb-3"><div class="card-body"><h5 class="card-title">Em Atendimento</h5><p class="card-text fs-3">${data.emAtendimento}</p></div></div></div>
+
+              <div class="col-md-3">
+                <div class="card text-white bg-success mb-3">
+                  <div class="card-body">
+                    <h5 class="card-title">Concluídos</h5>
+                    <p class="card-text fs-3">${data.total}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="card text-white bg-warning mb-3">
+                  <div class="card-body">
+                    <h5 class="card-title">Em Atendimento</h5>
+                    <p class="card-text fs-3">${data.aguardando}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-12">
+                <div class="card text-white bg-dark mb-3">
+                  <div class="card-body">
+                    <h5 class="card-title">Tempo Médio de Atendimento</h5>
+                    <p class="card-text fs-3">${data.mediaTempoAtendimento} segundos</p>
+                  </div>
+                </div>
+              </div>
             </div>
           `;
         });
     }
+
 
     window.onload = () => {
       const hash = window.location.hash.replace('#', '') || 'dashboard';
